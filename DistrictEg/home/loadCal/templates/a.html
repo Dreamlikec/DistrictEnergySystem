@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <!-- 引入组件库 -->
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+</head>
+
+<body>
+  <script src="//unpkg.com/vue/dist/vue.js"></script>
+  <script src="//unpkg.com/element-ui@2.13.2/lib/index.js"></script>
+  <div id="app">
+    <template>
+      <div class="block">
+        <span class="demonstration">供暖开启时间</span>
+        <el-date-picker type="date" placeholder="选择日期时间" v-model="endtime">
+        </el-date-picker>
+      </div>
+      <div class="block">
+        <span class="demonstration">供暖截止时间</span>
+        <el-date-picker type="date" placeholder="选择日期时间" v-model="starttime">
+        </el-date-picker>
+      </div>
+    </template>
+  </div>
+
+  <script>
+
+    var Main = {
+      data() {
+        return {
+        
+          endtime:new Date('2020-03-15'),
+          starttime:new Date('2019-11-15'),
+        };
+      }
+    };
+    var Ctor = Vue.extend(Main)
+    new Ctor().$mount('#app')
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>区域负荷预测</title>
+    <link rel="stylesheet" href="../static/style.css">
+    <script type="text/javascript" src="../static/echarts.js"></script>
+    <script type="text/javascript" src="../static/chart.js"></script>
+    <script type="text/javascript" src="../static/jquery.min.js" ></script>
+</head>
+
+<body>
+<div class="htmleaf-container">
+     <div id="test_form" class="form">
+       <form>
+           {% csrf_token %}
+	    <fieldset>
+	    <legend>区域负荷模拟计算 参数设置</legend>
+		<div style="margin-top:15px">
+			<div style="display:inline;">
+				<label>城　市:</label>
+				<select id="city" msg="城　市">
+				<option value="0">--请选择--</option>
+				<option value="1">北京</option>
+				<option value="2">上海</option>
+				<option value="3">武汉</option>
+				<option value="4">青岛</option>
+				<option value="5">南京</option>
+				<option value="6">长沙</option>
+				<option value="7">临沂</option>
+				<option value="8">深圳</option>
+				<option value="9">徐州</option>
+				</select>
+			</div>
+			<div style="display:inline;">
+				<label>建筑类型:</label>
+				<select id="jzlx" msg="建筑类型">
+				<option value="0">--请选择--</option>
+				<option value="1">办公建筑</option>
+				<option value="2">酒店建筑</option>
+				<option value="3">住宅建筑</option>
+				<option value="4">医院建筑</option>
+				<option value="5">学校建筑</option>
+				<option value="6">商场建筑</option>
+				</select>
+			</div>
+		</div>
+		<div>
+			<div style="display:inline;"><label>供能面积 (m²):</label><input type="text"  id="gnmj" msg="供能面积"/></div>
+			<div style="display:inline;"><label>建筑体形系数:</label><input type="text"  id="jztx" msg="建筑体形系数"/></div>
+		</div>
+		<div>
+			<div style="display:inline;"><label>夏季室内温度设定 (℃):</label><input type="text"  id="xjwd" msg="夏季室内温度设定"/></div>
+			<div style="display:inline;"><label>冬季室内温度设定 (℃):</label><input type="text"  id="djwd" msg="冬季室内温度设定"/></div>
+		</div>
+		<div>
+			<div style="display:inline;"><label>室内人员密度 (m2/p):</label><input type="text"  id="rymd" msg="室内人员密度"/></div>
+			<div style="display:inline;"><label>照明功率密度 (W/m²):</label><input type="text"  id="zmgl" msg="照明功率密度"/></div>
+		</div>
+		<div>
+			<div style="display:inline;"><label>设备功率密度 (m2/p):</label><input type="text"  id="sbgl" msg="设备功率密度"/></div>
+			<div style="display:inline;"><label>窗墙比:</label><input type="text"  id="cqb" msg="窗墙比"/></div>
+		</div>
+		<div>
+			<div style="display:inline;"><label>窗的太阳得热系数 (shgc):</label><input type="text"  id="cdrxs" msg="窗的太阳得热系数"/></div>
+			<div style="display:inline;"><label>窗的传热系数 (W/m²·℃):</label><input type="text"  id="ccrxs" msg="窗的传热系数"/></div>
+		</div>
+		<div>
+			<div style="display:inline;"><label>墙的传热系数 (W/m²·℃):</label><input type="text"  id="qcrxs" msg="墙的传热系数"/></div>
+			<div style="display:inline;"><label>&nbsp;</label><input type="text" value="&nbsp;" readonly="readonly" id="" msg=""/></div>
+		</div>
+		<div style="text-align:right;">
+			<div style="display:inline;margin: 0 0 0;"><button type="submit" class="push_button red" id="submit">负 荷 计 算</button></div>
+			<div style="display:inline;margin: 0 15px 0;"><button type="reset" class="push_button blue" id="reset">参 数 重 置</button></div>
+		</div>	
+		</fieldset>		
+       </form> 
+	   <form>	 
+	    <fieldset>
+	    <legend>负荷模拟数据</legend>	   
+	   	<div class="chart">
+			<div id="main" align="center" style="width:100%;height:300px"></div>
+		</div>
+		</fieldset>
+	   </form>
+     </div>
+</div>
+
+
+<script type="text/javascript">
+$(function(){
+    $("#submit").click(function(){
+       var num=0;
+       var str="";
+	   	$(".form select").each(function(){
+			if ($(this).val()==0) {
+			  num++;
+              str+="请选择 "+$(this).attr("msg")+"！\r\n";
+            }
+		});
+		$(".form input").each(function(){
+			if ($(this).val()=='') {
+			  num++;
+              str+=$(this).attr("msg")+"不能为空！\r\n";
+            }
+		});
+		if(num>0)
+		{
+			alert(str);
+			return false;
+		}
+		else
+		{
+		    /** 验证用户填入了所有内容，进行下一步 */
+		    getLoadCalrResults();
+		}
+    })
+})
+function getLoadCalrResults(){
+    /** 获取参数 */
+    var parameter = {
+        "city": $('#city option:selected').text(),
+        "jzlx": $('#jzlx option:selected').text(),
+        "gnmj": $("#gnmj").val(),
+        "jztx": $("#jztx").val(),
+        "xjwd": $("#xjwd").val(),
+        "djwd": $("#djwd").val(),
+        "rymd": $("#rymd").val(),
+        "zmgl": $("#zmgl").val(),
+        "sbgl": $("#sbgl").val(),
+        "cqb": $("#cqb").val(),
+        "cdrxs": $("#cdrxs").val(),
+        "ccrxs": $("#ccrxs").val(),
+        "qcrxs": $("#qcrxs").val(),
+    };
+    /** 获取完毕  开始请求*/
+        $.ajax({
+            //请求方式
+            type : "POST",
+            //请求的json类型，算了，就简单一点吧
+            //contentType: "application/json;charset=UTF-8",
+            //请求地址
+            url : "{% url 'doCal' %}",
+            //数据，json字符串
+            //data : JSON.stringify(parameter),
+            data : parameter,
+            headers:{'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()},
+            //请求成功
+            success : function(result) {
+                //console.log(result);
+                //不是Json的话格式化一下
+                var re=jQuery.parseJSON(result)
+				/** 开始画曲线 **/
+				drawChart(re);
+            },
+            //请求失败，包含具体的错误信息
+            error : function(e){
+                console.log(e.status);
+                console.log(e.responseText);
+            }
+        });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+.legend_container{
+  text-align:center
+}
+.legend_container li{
+  list-style:none;
+  display:inline
+}
+.btn-link, .btn-link:active, .btn-link:focus, .btn-link:hover {
+  border-color: transparent;
+  background-color: transparent;
+  box-shadow: none;
+}
+.btn-legend-item {
+  color: rgb(72, 72, 72);
+  padding: 0px;
+}
+.legend-item-bg {
+  display:inline-block;
+  width: 20px;
+  height: 12px;
+  margin-right: 5px;
+  border-radius: 2px;
+}
+.btn-selected{
+  opacity:0.3
+}

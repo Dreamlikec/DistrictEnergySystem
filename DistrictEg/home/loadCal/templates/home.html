@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="../static/css/base.css">
+    <link rel="stylesheet" href='../static/fa/css/all.css'>
+    <link rel="stylesheet" href="../static/css/iconfont.css">
+    <link rel="stylesheet" href="../static/css/left-menu.css">
+    <link rel="stylesheet" href="../static/css/input.css">
+    <link rel="stylesheet" href="../static/css/show.css">
+    <link rel="stylesheet" href="../static/css/eui.css">
+
+    <!-- 引入样式eLement ui -->
+    <script src='../static/js/jquery.min.js'></script>
+    <script type="text/javascript" src="../static/js/echarts.js"></script>
+
+</head>
+
+<body>
+    <!-- 引入vue -->
+    <script src="../static/js/vue.js"></script>
+    <!-- 引入组件库 -->
+    <script src="../static/js/eui.js"></script>
+
+
+    <!-- 设置左侧导航条 -->
+    <div class="left-menu-wrapper">
+        <div class="left-menu">
+            <li class="item" id='Buiding Information'>
+                <a href="#Buiding Information" class="btn">
+                    <i class='far fa-building'></i>
+                    建筑信息
+                </a>
+                <div class="smenu">
+                    <a href="javascript:;">基本信息</a>
+                    <a id="PI" href="javascript:;">参数输入</a>
+                </div>
+            </li>
+            <li class="item" id="District Loads">
+                <a href="#District Loads" class="btn">
+                    <i class='fas fa-chart-line'></i>
+                    区域负荷
+                </a>
+                <div class="smenu">
+                    <a href="javascript:;">时间表</a>
+                    <a href="javascript:;">冷热负荷</a>
+                </div>
+            </li>
+            <li class="item" id="Equipment Performance">
+                <a href="#Equipment Performance" class="btn">
+                    <i class='iconfont'>&#xe60a</i>
+                    设备性能
+                </a>
+                <div class="smenu">
+                    <a href="javascript:;">冷机</a>
+                    <a href="javascript:;">热泵</a>
+                    <a href="javascript:;">循环泵</a>
+                    <a href="javascript:;">冷却塔</a>
+                    <a href="javascript:;">换热器</a>
+                    <a href="javascript:;">PAU/AHU</a>
+                    <a href="javascript:;">辐射板</a>
+                </div>
+            </li>
+
+            <li class="item" id="Sizing Optimization">
+                <a href="#Sizing Optimization" class="btn">
+                    <i class='iconfont'>&#xe63f</i>
+                    优化选型
+                </a>
+                <div class="smenu">
+                    <a href="javascript:;">能源价格</a>
+                    <a href="javascript:;">天气参数</a>
+                </div>
+            </li>
+
+            <li class="item" id="Optimization Result">
+                <a href="#Optimization Result" class="btn">
+                    <i class='iconfont'>&#xe640</i>
+                    优化结果
+                </a>
+                <div class="smenu">
+                    <a href="javascript:;">运行能耗</a>
+                    <a href="javascript:;">运行费用</a>
+                    <a href="javascript:;">控制策略</a>
+                </div>
+            </li>
+
+            <li class="item" id="System Topology">
+                <a href="#System Topology" class="btn">
+                    <i class='iconfont'>&#xe6ea</i>
+                    系统拓扑图
+                </a>
+                <div class="smenu">
+                    <a href="javascript:;">系统拓扑</a>
+                    <a href="javascript:;">管网系统</a>
+                </div>
+            </li>
+
+            <li class="item">
+                <a href="#" class="btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </li>
+        </div>
+    </div>
+
+    <!-- 设置右侧输入区域 -->
+    <div class="outer-container">
+        <h2>区域建筑群信息表</h2>
+
+        <div id="app">
+
+
+
+
+            <!-- 设置输入选项卡  -->
+            <el-tabs v-model="editableTabsValue" type="card" closable @tab-remove="removeTab">
+                <el-tab-pane v-for="(item, index) in editableTabs" :key="item.name" :label="item.title"
+                    :name="item.name">
+                    <!-- 设置表单 -->
+                    <form class="Parameters" id="form">
+                        <!-- 城市及建筑类型下拉列表 -->
+                        <div class="select-wrapper">
+                            <div class="city-select">
+                                <div class="seleted-item">
+                                    <p>选择的城市 : <span>无</span></p>
+                                </div>
+                                <select name="curCity" id="current-city" class="select-field" msg="城市"
+                                    v-model="form[editableTabsValue].city" @change='change($event,item)'>
+                                    <option value="">- 请选择城市 -</option>
+                                    <option value="北京">北京</option>
+                                    <option value="上海">上海</option>
+                                    <option value="深圳">深圳</option>
+                                    <option value="徐州">徐州</option>
+                                    <option value="南京">南京</option>
+                                    <option value="长沙">长沙</option>
+                                    <option value="武汉">武汉</option>
+                                    <option value="青岛">青岛</option>
+                                    <option value="临沂">临沂</option>
+                                </select>
+                            </div>
+                            <div class="bulding-type-select">
+                                <div class="seleted-item">
+                                    <p>选择的建筑类型 : <span>无</span></p>
+                                </div>
+                                <select name="curBType" id="curent-building-type" class="select-field" msg="建筑类型"
+                                    v-model="form[editableTabsValue].type" @change='change($event,item)'>
+                                    <option value="">- 请选择建筑类型 -</option>
+                                    <option value="办公建筑">办公建筑</option>
+                                    <option value="商业建筑">商业建筑</option>
+                                    <option value="酒店建筑">酒店建筑</option>
+                                    <option value="医院建筑">医院建筑</option>
+                                    <option value="学校建筑">学校建筑</option>
+                                    <option value="住宅建筑">住宅建筑</option>
+                                </select>
+                            </div>
+
+                        </div>
+                        <div class="blank-wrapper">
+                            <div class="input-field">
+                                <input type="text" name="建筑面积" required v-model="form[editableTabsValue].ba">
+                                <label>建筑面积( ㎡)</label>
+                                <span></span>
+                            </div>
+                            <div class="input-field">
+                                <input type="text" name="体形系数" id='sc' required v-model="form[editableTabsValue].sc"
+                                    @blur='blur'>
+                                <label>体形系数</label>
+                                <span></span>
+                                <p></p>
+                            </div>
+                            <div class="input-field">
+                                <input type="text" name="夏季设计温度" id='sdt' required=""
+                                    v-model="form[editableTabsValue].sdt" @blur='blur'>
+                                <label>夏季设计温度 (℃)</label>
+                                <span></span>
+                                <p></p>
+                            </div>
+                            <div class="input-field">
+                                <input type="text" name="冬季设计温度" id='wdt' required=""
+                                    v-model="form[editableTabsValue].wdt" @blur='blur'>
+                                <label>冬季设计温度 (℃)</label>
+                                <span></span>
+                                <p></p>
+                            </div>
+                            <div class="input-field">
+                                <input type="text" name="人员密度" id='pd' required="" v-model="form[editableTabsValue].pd"
+                                    @blur='blur'>
+                                <label>人员密度 (㎡/P)</label>
+                                <span></span>
+                                <p></p>
+                            </div>
+                            <div class="input-field">
+                                <input type="text" name=照明功率密度" id='ld' required="" v-model="form[editableTabsValue].ld"
+                                    @blur='blur'>
+                                <label>照明功率密度 (W/㎡)</label>
+                                <span></span>
+                                <p></p>
+                            </div>
+                            <div class="input-field">
+                                <input type="text" name="设备功率密度" id='ed' required=""
+                                    v-model="form[editableTabsValue].ed" @blur='blur'>
+                                <label>设备功率密度(W/㎡)</label>
+                                <span></span>
+                                <p></p>
+                            </div>
+                            <div class="input-field">
+                                <input type="text" name="窗墙比" id='gr' required="" v-model="form[editableTabsValue].gr"
+                                    @blur='blur'>
+                                <label>窗墙比</label>
+                                <span></span>
+                                <p></p>
+                            </div>
+                            <div class="input-field">
+                                <input type="text" name="SHGC" id='shgc' required=""
+                                    v-model="form[editableTabsValue].shgc" @blur='blur'>
+                                <label>SHGC</label>
+                                <span></span>
+                                <p id='shgcs'></p>
+                            </div>
+                            <div class="input-field">
+                                <input type="text" name="窗的传热系数" id='gk' required=""
+                                    v-model="form[editableTabsValue].gk" @blur='blur'>
+                                <label>窗的传热系数 (W/(㎡·℃))</label>
+                                <span></span>
+                                <p></p>
+                            </div>
+                            <div class="input-field">
+                                <input type="text" name="墙的传热系数" id='wk' required=""
+                                    v-model="form[editableTabsValue].wk" @blur='blur'>
+                                <label>墙的传热系数(W/(㎡·℃))</label>
+                                <span></span>
+                                <p></p>
+                            </div>
+                        </div>
+
+                        <!-- 设置供能时间 -->
+                        <div>
+                            <div class="select-wrapper">
+                                <div class="block">
+                                    <span class="demonstration">供暖开启时间</span>
+                                    <el-date-picker type="date" placeholder="选择日期时间" v-model="heatingStartTime">
+                                    </el-date-picker>
+                                </div>
+                                <div class="block">
+                                    <span class="demonstration">供暖截止时间</span>
+                                    <el-date-picker type="date" placeholder="选择日期时间" v-model="heatingEndTime">
+                                    </el-date-picker>
+                                </div>
+                            </div>
+                            <div class="select-wrapper">
+                                <div class="block">
+                                    <span class="demonstration">制冷开启时间</span>
+                                    <el-date-picker type="date" placeholder="选择日期时间" v-model="coolingStartTime">
+                                    </el-date-picker>
+                                </div>
+                                <div class="block">
+                                    <span class="demonstration">制冷截止时间</span>
+                                    <el-date-picker type="date" placeholder="选择日期时间" v-model="coolingEndTime">
+                                    </el-date-picker>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 30px; margin-bottom: 20px;margin-left: 20px;font-size: 30px;">
+                            <el-button size="middle" @click="addTab(editableTabsValue)">
+                                添加建筑
+                            </el-button>
+                            <el-button size="middle" type='primary' @click='submit'>
+                                负荷计算
+                            </el-button>
+                        </div>
+                    </form>
+                </el-tab-pane>
+            </el-tabs>
+            <!-- 设置图表选项卡 -->
+            <div class="legend_container">
+                <ul>
+                    <li v-for="item in legendData" style="margin-left:10px;font-size: 14px">
+                        <button class="btn-link btn-legend-item" @click="changeLegend(item,$event)">
+                            <span class="legend-item-bg" :style="'background-color:'+legendColor[item]"></span>
+                        </button>
+                        <span v-text="item"></span>
+                    </li>
+                </ul>
+            </div>
+            <!-- 设置Echarts图表 -->
+            <div id="myLine" :style="{width:'100%',height:'300px'}">
+            </div>
+            <!-- 设置输出表单 -->
+            <div style="margin-top: 20px;">
+                <el-table :data="tableData" style="width: 100%">
+                    <el-table-column prop="buildingType" label="建筑类型" width="120">
+                    </el-table-column>
+                    <el-table-column prop="buildingArea" label="建筑面积(㎡)" width="120">
+                    </el-table-column>
+                    <el-table-column prop="coolingIndex" label="冷指标(W/㎡)" width='180'>
+                    </el-table-column>
+                    <el-table-column prop="heatingIndex" label="热指标(W/㎡)" width='180'>
+                    </el-table-column>
+                    <el-table-column prop="coolingLoad" label="冷负荷(W)" width='180'>
+                    </el-table-column>
+                    <el-table-column prop="heatingLoad" label="热负荷(W)" width='180'>
+                    </el-table-column>Load
+                    <el-table-column prop="coolingEnergyAver" label="单位面积年耗冷量(kW·h/㎡·a)" width='250'>
+                    </el-table-column>
+                    <el-table-column prop="heatingEnergyAver" label="单位面积年耗热量(kW·h/㎡·a)" width='250'>
+                    </el-table-column>test
+                </el-table>
+            </div>
+        </div>
+        <!-- 绑定选项卡的响应事件 -->
+        <Script>
+
+            var isSatified = true;
+            var app = new Vue({
+                el: '#app',
+                data: {
+                    editableTabsValue: '1',
+                    editableTabs: [{
+                        title: '建筑 1',
+                        name: '1'
+                    }],
+                    tabIndex: 1,
+                    // 获取表单填入的内容
+                    form: {
+                        '1': {
+                            'city': '',
+                            'type': '',
+                            'ba': '', 'sc': '', 'sdt': '', 'wdt': '', 'pd': '', 'ld': '', 'ed': '', 'gr': '', 'shgc': '', 'gk': '', 'wk': ''
+                        }
+
+                    },
+                    // 设置Echarts的返回数组
+                    xData: [],
+                    series: [],
+                    legendData: [],
+                    legendColor: {},
+                    storage: {},
+                    colors: ['#2980b9', '#e74c3c', '#f1c40f', '#1abc9c', '#34495e', '#27ae60', '#8e44ad'],
+                    // 设置表格的返回值
+                    tableData: [],
+                    // 设置功能时间默认值
+                    heatingStartTime:new Date('2019-11-15'),
+                    heatingEndTime:new Date('2020-03-15'),
+                    coolingStartTime:new Date('2019-06-15'),
+                    coolingEndTime:new Date('2020-09-15')
+                },
+
+                methods: {
+                    // 提交所有表单进行负荷计算
+                    submit() {
+                        console.log(this);
+                        if (!isSatified) {
+                            alert("请检查所有条件");
+                            return;
+                        }
+
+                        var curForm = this.form;
+                        var keyArr = Object.keys(curForm);
+                        var varArr = keyArr.map(function (i) { return curForm[i] });
+                        var builArr = [];
+                        for (var i = 0; i < varArr.length; i++) {
+                            var paramArr = [];
+                            for (var item in varArr[i]) {
+                                if (varArr[i][item] == '') {
+                                    switch (item) {
+                                        case "city": paramStr = '城市'; break;
+                                        case "type": paramStr = '建筑类型'; break;
+                                        case "ba": paramStr = '建筑面积'; break;
+                                        case "sc": paramStr = '体形系数'; break;
+                                        case "sdt": paramStr = '夏季设定温度'; break;
+                                        case "wdt": paramStr = '冬季设定温度'; break;
+                                        case "pd": paramStr = '人员密度'; break;
+                                        case "ld": paramStr = '照明密度'; break;
+                                        case "ed": paramStr = '设备功率密度'; break;
+                                        case "gr": paramStr = '窗墙比'; break;
+                                        case "shgc": paramStr = 'shgc'; break;
+                                        case "gk": paramStr = '窗的传热系数'; break;
+                                        case "wk": paramStr = '墙的传热系数'; break;
+                                    }
+                                    alert('第' + (i + 1) + '个表中的' + paramStr + '不能为空');
+                                    return;
+                                }
+                                paramArr.push(varArr[i][item]);
+                            }
+                            builArr.push(paramArr)
+                        }
+                        var _this = this;
+                        $.ajax({
+                            type: 'POST',
+                            url: "{% url 'loadCal' %}",
+                            // contentType 
+                            contentType: "application/json",
+                            headers: { 'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val() },
+                            // // dataType
+                            // dataType: "json",
+                            data: JSON.stringify(curForm),
+                            success: function (res) {
+                                var resData = JSON.parse(res);
+                                console.log(resData);
+                                _this.$options.methods.fetchData(resData, _this);
+
+                            }
+                        })
+
+                    },
+
+                    // 画出Echarts图表
+                    fetchData(res, _self) {
+                        _self.series = []
+                        // _dataArray 为请求响应得到的数组
+                        // var _this = this;
+                        let _dataArray = res;
+                        // len = _dataArray.length;
+                        for (var i in _dataArray) {
+                            if (i % 3 != 0) {
+                                // 如果当前legend中不包含该实例的名称
+                                if (!_self.legendData.includes(_dataArray[i]['instance_name'])) {
+                                    //将设置该实例的legend颜色为当前colors数组的数组长度，即为最后一个值
+                                    _self.legendColor[_dataArray[i]['instance_name']] = _self.colors[_self.legendData.length];
+                                    //将该实例的名称填入legend
+                                    _self.legendData.push(_dataArray[i]['instance_name']);
+
+                                }
+
+                                let _obj = {
+                                    name: _dataArray[i]['stat_name'],
+                                    type: 'line',
+                                    smooth: true,
+                                    dbname: _dataArray[i]['instance_name'],
+                                    color: _self.legendColor[_dataArray[i]['instance_name']],
+                                    // data: _dataArray[i]['stat_value'].split(',')
+                                    data: _dataArray[i]['stat_value']
+                                }
+                                _self.series.push(_obj)
+                            }
+                            else {
+                                _self.tableData.push(_dataArray[i])
+                            }
+                        }
+                        for (var item in _self.legendData) {
+                            console.log(_self.legendData[item])
+                        }
+
+
+                        // for (let i = 0; i < len; i++) {
+                        //     console.log(_dataArray[i]);
+                        //     // 如果当前legend中不包含该实例的名称
+                        //     if (!this.legendData.includes(_dataArray[i].instance_name)) {
+                        //         //将设置该实例的legend颜色为当前colors数组的数组长度，即为最后一个值
+                        //         this.legendColor[_dataArray[i].instance_name] = this.colors[this.legendData.length];
+                        //         //将该实例的名称填入legend
+                        //         this.legendData.push(_dataArray[i].instance_name);
+                        //     }
+                        //     let _obj = {
+                        //         name: _dataArray[i].stat_name,
+                        //         type: 'line',
+                        //         smooth: true,
+                        //         dbname: _dataArray[i].instance_name,
+                        //         color: this.legendColor[_dataArray[i].instance_name],
+                        //         data: _dataArray[i].stat_value.split(',')
+                        //     }
+                        //     this.series.push(_obj)
+                        // }
+                        _self.xData = _dataArray[1]['snap_time']
+                        _self.drawLine();
+
+                    },
+                    addTab(targetName) {
+                        let newTabIndex = ++this.tabIndex + '';
+                        this.editableTabs.push({
+                            title: '建筑 ' + newTabIndex,
+                            name: newTabIndex,
+
+                        });
+                        this.editableTabsValue = newTabIndex;
+                        this.$set(this.form, newTabIndex, {
+                            'city': '',
+                            'type': '',
+                            'ba': '', 'sc': '', 'sdt': '', 'wdt': '', 'pd': '', 'ld': '', 'ed': '', 'gr': '', 'shgc': '', 'gk': '', 'wk': '',
+                        })
+                    },
+                    // 删除选项卡
+                    removeTab(targetName) {
+                        let tabs = this.editableTabs;
+                        let activeName = this.editableTabsValue;
+                        if (activeName === targetName) {
+                            tabs.forEach((tab, index) => {
+                                if (tab.name === targetName) {
+                                    let nextTab = tabs[index + 1] || tabs[index - 1];
+                                    if (nextTab) {
+                                        activeName = nextTab.name;
+                                    }
+                                }
+                            });
+                        }
+
+                        this.editableTabsValue = activeName;
+                        this.editableTabs = tabs.filter(tab => tab.name !== targetName);
+                        let form = {}
+                        Object.keys(this.form).forEach((item) => {
+                            if (item != targetName) {
+                                form[item] = this.form[item]
+                            }
+                        })
+                        this.form = form
+                    },
+                    // 验证各个填空的值是否符合规则
+                    blur(e) {
+                        // 声明最小值
+                        var minValue = 0;
+                        // 声明最大值
+                        var maxValue = 0;
+                        // 声明提示信息
+                        var currentSign = '';
+                        // 获取当前点击的id
+                        var id = e.target.id;
+                        // 获取到选项卡中的顶级父元素
+                        var parentTarget = e.target.parentElement.parentElement.parentElement.parentElement.id;
+                        // 获取填空中的值
+                        var value = e.target.value;
+                        // 对填空中的值进行判断
+                        switch (id) {
+                            case "sc":
+                                minValue = 0.2;
+                                maxValue = 0.8;
+                                break;
+                            case "sdt":
+                                minValue = 20;
+                                maxValue = 26;
+                                break;
+                            case "wdt":
+                                minValue = 18;
+                                maxValue = 22;
+                                break;
+                            case "pd":
+                                minValue = 1;
+                                maxValue = 30;
+                                break;
+                            case "ld":
+                                minValue = 1;
+                                maxValue = 20;
+                                break;
+                            case "ed":
+                                minValue = 1;
+                                maxValue = 20;
+                                break;
+                            case "gr":
+                                minValue = 0.2;
+                                maxValue = 0.8;
+                                break;
+                            case "shgc":
+                                minValue = 0.15;
+                                maxValue = 0.8;
+                                break;
+                            case "gk":
+                                minValue = 0.8;
+                                maxValue = 2.5;
+                                break;
+                            case "wk":
+                                minValue = 0.4;
+                                maxValue = 2;
+                                break;
+                        }
+                        // 设置提示信息
+                        currentSign = '请输入' + minValue + "-" + maxValue + "之间的值";
+                        // 获取提示信息对应的p元素
+                        let pInhtml = document.querySelector('#' + parentTarget + ' #' + id + ' ~ p');
+                        // 判断是否满足该参数的条件
+                        if (!(value >= minValue && value <= maxValue)) {
+
+                            pInhtml.className = 'bg-danger';
+                            pInhtml.innerHTML = currentSign;
+                            isSatified = false;
+                        } else {
+                            pInhtml.innerHTML = '';
+                            pInhtml.className = '';
+                            isSatified = true;
+                        }
+                    },
+                    // 下拉框发生change事件
+                    change(event, item) {
+                        var ele = event.target.parentElement.className
+                        // 获取到选项卡中的顶级父元素
+                        var parentTarget = event.target.parentElement.parentElement.parentElement.parentElement.id;
+                        let spanInthml = document.querySelector('#' + parentTarget + " ." + ele + " span");
+                        spanInthml.innerHTML = event.target.value;
+                        this.editableTabs.title = event.target.value;
+                    },
+                    // 画曲线
+                    drawLine() {
+                        let myLine = echarts.init(document.getElementById('myLine'));
+                        let option = {
+                            tooltip: {
+                                trigger: 'axis'
+                            },
+                            legend: {
+                                selectedMode: 'single'
+                            },
+                            grid: {
+                                left: '3%',
+                                right: '7%',
+                                bottom: '3%',
+                                containLabel: true
+                            },
+                            xAxis: [
+                                {
+                                    type: 'category',
+                                    axisTick: {
+                                        alignWithLabel: true
+                                    },
+                                    data: this.xData,
+                                    name: '时间'
+                                }
+                            ],
+                            yAxis: [
+                                {
+                                    type: 'value',
+                                    name: '负荷值(w)'
+                                }
+                            ],
+                            series: this.series
+                        };
+                        myLine.setOption(option);
+                        window.addEventListener("resize", () => { myLine.resize(); });
+                    },
+                    // 改变legend事件
+                    changeLegend(item, e) {
+                        let _obj = {},
+                            len = this.series.length,
+                            _data = this.series;
+                        let thisDom = e.currentTarget;
+                        thisDom.classList.toggle('btn-selected');
+                        for (let i = 0; i < len; i++) {
+                            if (item === _data[i].dbname) {
+                                //如果为空，说明被选，置为存储的数据
+                                if (_data[i].data.length === 0) {
+                                    _data[i].data = this.storage[item][_data[i].name]
+                                } else {
+                                    //先存数据，再置为空
+                                    _obj[_data[i].name] = _data[i].data;
+                                    _data[i].data = []
+                                }
+                            }
+                        }
+                        //存储数据
+                        this.storage[item] = _obj;
+                        this.drawLine();
+                    },
+                }
+            })
+        </Script>
+    </div>
+
+</body>
+
+</html>
